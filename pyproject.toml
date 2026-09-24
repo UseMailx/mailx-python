@@ -1,9 +1,15 @@
 [project]
 name = "mailx-sdk"
-version = "0.44.0"
+version = "0.1.0"
 description = "Official Python client for the MailX API"
+readme = "README.md"
+license = "MIT"
 requires-python = ">=3.8"
 dependencies = ["requests>=2.28"]
+
+[project.urls]
+Homepage = "https://github.com/UseMailx/mailx-python"
+Repository = "https://github.com/UseMailx/mailx-python"
 
 [build-system]
 requires = ["setuptools>=61"]
