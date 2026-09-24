@@ -3,6 +3,10 @@
 Official Python client for the MailX API. Targets the OpenAPI spec as of
 `internal/api/openapi.go` at repo commit `c05c751` (v0.43).
 
+```bash
+pip install mailx-sdk
+```
+
 ```python
 from mailx_sdk import MailXClient
 
