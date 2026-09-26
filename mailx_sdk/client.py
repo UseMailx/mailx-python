@@ -198,6 +198,9 @@ class MailXClient:
     def analytics_broadcast(self, broadcast_id: str) -> Dict[str, Any]:
         return self._request("GET", f"/analytics/broadcasts/{broadcast_id}")
 
+    def analytics_domains(self, from_: str, to: str) -> Dict[str, Any]:
+        return self._request("GET", "/analytics/domains", params={"from": from_, "to": to})
+
     # ---- Suppressions ----
     def create_suppression(self, **body) -> Dict[str, Any]:
         return self._request("POST", "/suppressions", json=body)
