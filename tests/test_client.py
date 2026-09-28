@@ -58,6 +58,34 @@ class TestMailXClient(unittest.TestCase):
         with self.assertRaises(ValueError):
             MailXClient(api_key="")
 
+    def test_new_methods_hit_the_expected_route_and_method(self):
+        cases = [
+            ("whoami", lambda c: c.whoami(), "GET", "https://x/v1/whoami"),
+            ("get_email_events", lambda c: c.get_email_events("em1"), "GET", "https://x/v1/emails/em1/events"),
+            (
+                "preview_template",
+                lambda c: c.preview_template("t1", {"name": "Ada"}),
+                "POST",
+                "https://x/v1/templates/t1/preview",
+            ),
+            (
+                "preview_broadcast",
+                lambda c: c.preview_broadcast("a1", "t1"),
+                "POST",
+                "https://x/v1/broadcasts/preview",
+            ),
+            ("get_suppression", lambda c: c.get_suppression("s1"), "GET", "https://x/v1/suppressions/s1"),
+        ]
+        for name, call, method, url in cases:
+            with self.subTest(name):
+                session = MagicMock()
+                session.request.return_value = fake_response(200, {})
+                client = MailXClient(api_key="mx_test", base_url="https://x/v1", session=session)
+                call(client)
+                args, kwargs = session.request.call_args
+                self.assertEqual(args[0], method)
+                self.assertEqual(args[1], url)
+
 
 if __name__ == "__main__":
     unittest.main()

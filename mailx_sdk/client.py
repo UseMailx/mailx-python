@@ -57,6 +57,13 @@ class MailXClient:
                 float(retry_after) if retry_after else None,
             )
 
+    # ---- Meta ----
+    def whoami(self) -> Dict[str, Any]:
+        """Introspects the authenticated API key: the organization it belongs
+        to and the key's own public identity (id, name, scopes) - never the
+        raw secret or its hash."""
+        return self._request("GET", "/whoami")
+
     # ---- Emails ----
     def send_email(self, from_: str, to: List[str], idempotency_key: str = None, **kwargs) -> Dict[str, Any]:
         body = {"from": from_, "to": to, **kwargs}
@@ -70,6 +77,11 @@ class MailXClient:
 
     def list_emails(self, limit: int = None, cursor: str = None, status: str = None) -> Dict[str, Any]:
         return self._request("GET", "/emails", params={"limit": limit, "cursor": cursor, "status": status})
+
+    def get_email_events(self, email_id: str) -> Dict[str, Any]:
+        """Diagnoses one email's delivery: its lifecycle timeline and, for
+        each delivery attempt, the SMTP outcome and failure classification."""
+        return self._request("GET", f"/emails/{email_id}/events")
 
     # ---- Events ----
     def list_events(self, limit: int = None, cursor: str = None) -> Dict[str, Any]:
@@ -134,6 +146,12 @@ class MailXClient:
     def list_templates(self, limit: int = None, cursor: str = None) -> Dict[str, Any]:
         return self._request("GET", "/templates", params={"limit": limit, "cursor": cursor})
 
+    def preview_template(self, template_id: str, variables: Dict[str, str] = None) -> Dict[str, Any]:
+        """Renders a template's subject/text/html with given variables, with
+        no side effects - use before send_email/create_broadcast to check a
+        template looks right."""
+        return self._request("POST", f"/templates/{template_id}/preview", json={"variables": variables or {}})
+
     # ---- Contacts ----
     def create_contact(self, **body) -> Dict[str, Any]:
         return self._request("POST", "/contacts", json=body)
@@ -188,6 +206,12 @@ class MailXClient:
     def list_broadcast_recipients(self, broadcast_id: str, limit: int = None, cursor: str = None) -> Dict[str, Any]:
         return self._request("GET", f"/broadcasts/{broadcast_id}/recipients", params={"limit": limit, "cursor": cursor})
 
+    def preview_broadcast(self, audience_id: str, template_id: str) -> Dict[str, Any]:
+        """Resolves an audience and evaluates suppression against it,
+        returning recipient/suppressed/eligible counts before a broadcast is
+        created - the bulk-send safety check."""
+        return self._request("POST", "/broadcasts/preview", json={"audience_id": audience_id, "template_id": template_id})
+
     # ---- Analytics ----
     def analytics_overview(self, from_: str, to: str) -> Dict[str, Any]:
         return self._request("GET", "/analytics/overview", params={"from": from_, "to": to})
@@ -204,6 +228,9 @@ class MailXClient:
     # ---- Suppressions ----
     def create_suppression(self, **body) -> Dict[str, Any]:
         return self._request("POST", "/suppressions", json=body)
+
+    def get_suppression(self, suppression_id: str) -> Dict[str, Any]:
+        return self._request("GET", f"/suppressions/{suppression_id}")
 
     def delete_suppression(self, suppression_id: str) -> None:
         return self._request("DELETE", f"/suppressions/{suppression_id}")
